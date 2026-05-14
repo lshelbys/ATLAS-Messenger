@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0d10">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="ATLAS">
+    <title>ATLAS Messenger</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // Apply saved theme before paint to avoid a flash
+        try { document.documentElement.dataset.theme = localStorage.getItem('atlas-theme') || 'dark'; } catch (_) { document.documentElement.dataset.theme = 'dark'; }
+    </script>
+</head>
+<body>
+
+<!-- ── Auth ──────────────────────────────────────────── -->
+<div id="auth-container" class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="logo-mark">A</div>
+            <span>ATLAS</span>
+        </div>
+        <p class="auth-subtitle">Secure team messaging</p>
+
+        <!-- Login form -->
+        <div id="login-form">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+            </div>
+            <button id="login-btn" class="btn-primary">Sign in</button>
+            <button id="forgot-pw-btn" class="link-btn" type="button">Forgot password?</button>
+            <div class="auth-divider"><span>or</span></div>
+            <button id="show-signup-btn" class="btn-secondary">Create account</button>
+        </div>
+
+        <!-- Signup form -->
+        <div id="signup-form" class="hidden">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="Min. 6 characters" autocomplete="new-password">
+            </div>
+            <div class="input-group">
+                <label>Display name</label>
+                <input type="text" id="signup-name" placeholder="Your name">
+            </div>
+            <div class="input-group">
+                <label>Username</label>
+                <div class="username-input-wrap">
+                    <span class="at-prefix">@</span>
+                    <input type="text" id="signup-username" placeholder="yourhandle" autocomplete="off" spellcheck="false">
+                    <span id="signup-username-status" class="username-status"></span>
+                </div>
+                <p class="input-hint">Letters, numbers, underscores only</p>
+            </div>
+            <button id="signup-btn" class="btn-primary">Create account</button>
+            <div class="auth-divider"><span>or</span></div>
+            <button id="show-login-btn" class="btn-secondary">Sign in instead</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Email verification banner ──────────────────────── -->
+<div id="verify-banner" class="verify-banner hidden">
+    <span>Please verify your email address.</span>
+    <button id="resend-verify-btn" class="link-btn">Resend email</button>
+    <button id="dismiss-verify-btn" class="icon-btn" title="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+</div>
+
+<!-- ── Main App ───────────────────────────────────────── -->
+<div id="chat-container" class="hidden messenger-layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="workspace-name">ATLAS</div>
+            <div class="header-actions">
+                <button id="theme-toggle-btn" class="icon-btn" title="Toggle light / dark">
+                    <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                </button>
+                <button id="edit-profile-btn" class="icon-btn" title="Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07M4.93 4.93a10 10 0 0 0 14.14 14.14"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+                </button>
+                <button id="starred-btn" class="icon-btn" title="Starred messages">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+                <button id="shortcuts-btn" class="icon-btn" title="Keyboard shortcuts (?)">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M6 14h.01M18 14h.01M10 14h4"/></svg>
+                </button>
+                <button id="logout-btn" class="icon-btn" title="Sign out">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="user-card">
+            <div class="avatar-wrap">
+                <img id="profile-img" src="" alt="" style="display:none">
+                <div id="profile-initials" class="avatar-initials">A</div>
+                <div class="status-dot online"></div>
+            </div>
+            <div class="user-info">
+                <span id="display-name" class="user-name">Agent</span>
+                <span id="my-username" class="my-username">@username</span>
+            </div>
+        </div>
+
+        <!-- Add contact by @username or email -->
+        <div class="add-contact">
+            <div class="add-input-wrap">
+                <input type="text" id="search-uid" class="uid-input" placeholder="@username or email…" autocomplete="off" spellcheck="false">
+                <div id="user-search-results" class="user-search-results hidden"></div>
+            </div>
+            <button id="send-request-btn" class="btn-add">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add
+            </button>
+        </div>
+
+        <button id="new-group-btn" class="new-group-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>New group</span>
+        </button>
+
+        <!-- Contact filter -->
+        <div class="sidebar-search">
+            <div class="sidebar-search-inner">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="contact-search" placeholder="Filter conversations…">
+            </div>
+        </div>
+
+        <div class="scroller">
+            <div id="request-list"></div>
+            <div id="chat-list-header" class="list-section-header hidden">Direct messages</div>
+            <div id="chat-list"></div>
+            <button id="toggle-archived-btn" class="archived-toggle hidden" type="button">
+                <span id="archived-toggle-label">Show archived</span>
+                <span id="archived-count" class="archived-count"></span>
+            </button>
+            <div id="archived-list" class="hidden"></div>
+        </div>
+    </aside>
+
+    <!-- Chat View -->
+    <main class="chat-viewport">
+        <div id="chat-placeholder" class="placeholder">
+            <div class="placeholder-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <p class="placeholder-title">No conversation open</p>
+            <p class="placeholder-sub">Select a chat or add a contact by @username or email</p>
+        </div>
+
+        <div id="active-chat-ui" class="hidden">
+            <!-- Chat header -->
+            <div class="chat-header">
+                <button id="back-btn" class="icon-btn back-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <div class="chat-header-avatar">
+                    <img id="active-friend-img" src="" alt="" style="display:none">
+                    <div id="active-friend-initials" class="avatar-initials" style="width:34px;height:34px;font-size:12px;display:none"></div>
+                    <div id="active-friend-dot" class="status-dot offline"></div>
+                </div>
+                <div class="chat-header-info">
+                    <span id="active-friend-name" class="chat-header-name">Chat</span>
+                    <span class="chat-header-sub">
+                        <span id="active-friend-handle" class="chat-header-handle"></span>
+                        <span id="active-friend-presence" class="chat-header-presence"></span>
+                    </span>
+                </div>
+                <div class="chat-header-actions">
+                    <button id="search-msg-btn" class="icon-btn" title="Search messages">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+                    <button id="info-btn" class="icon-btn" title="Conversation info">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </button>
+                    <button id="chat-menu-btn" class="icon-btn" title="More">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+                    </button>
+                    <button id="remove-friend-btn" class="icon-btn danger-icon" title="Remove friend">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="17" y1="8" x2="23" y2="14"/><line x1="23" y1="8" x2="17" y2="14"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Message search bar -->
+            <div id="msg-search-bar" class="msg-search-bar hidden">
+                <input type="text" id="msg-search-input" placeholder="Search in this conversation…">
+                <span id="msg-search-count" class="search-count"></span>
+                <button id="msg-search-prev" class="icon-btn" title="Previous">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <button id="msg-search-next" class="icon-btn" title="Next">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+                <button id="msg-search-close" class="icon-btn" title="Close">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <!-- Messages -->
+            <div id="messages"></div>
+
+            <!-- Scroll to latest -->
+            <button id="scroll-bottom-btn" class="scroll-to-bottom hidden" title="Jump to latest">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                <span id="scroll-bottom-badge" class="scroll-bottom-badge hidden">0</span>
+            </button>
+
+            <!-- Typing indicator -->
+            <div id="typing-indicator" class="typing-indicator hidden">
+                <div class="typing-dots"><span></span><span></span><span></span></div>
+                <span id="typing-name">Someone</span> is typing…
+            </div>
+
+            <!-- Reply preview -->
+            <div id="reply-preview" class="reply-preview hidden">
+                <div class="reply-preview-accent"></div>
+                <div class="reply-preview-body">
+                    <span id="reply-preview-name" class="reply-preview-name"></span>
+                    <span id="reply-preview-text" class="reply-preview-text"></span>
+                </div>
+                <button id="reply-preview-close" class="icon-btn" title="Cancel reply">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+
+            <!-- Disabled-chat banner (blocked / deleted partner) -->
+            <div id="chat-disabled-banner" class="chat-disabled-banner hidden">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span id="chat-disabled-text">You can't send messages in this conversation.</span>
+            </div>
+
+            <!-- Message bar -->
+            <div class="message-bar">
+                <button id="emoji-toggle-btn" class="icon-btn" title="Emoji">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                </button>
+                <div id="emoji-picker" class="emoji-picker hidden">
+                    <input type="text" class="emoji-search" id="emoji-search" placeholder="Search emoji…">
+                    <div class="emoji-grid" id="emoji-grid"></div>
+                </div>
+                <textarea id="message-input" class="msg-input" placeholder="Message…" rows="1"></textarea>
+                <button id="send-btn" class="send-btn" disabled>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- ── Settings Modal ─────────────────────────────────── -->
+<div id="settings-modal" class="modal hidden">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>Edit profile</h3>
+            <button id="close-settings" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="input-group">
+            <label>Display name</label>
+            <input type="text" id="edit-name" placeholder="Your name">
+        </div>
+        <div class="input-group">
+            <label>Username</label>
+            <div class="username-input-wrap">
+                <span class="at-prefix">@</span>
+                <input type="text" id="edit-username" placeholder="yourhandle" autocomplete="off" spellcheck="false">
+                <span id="edit-username-status" class="username-status"></span>
+            </div>
+            <p class="input-hint">Letters, numbers, underscores only</p>
+        </div>
+        <div class="input-group">
+            <label>Avatar URL</label>
+            <input type="text" id="edit-pic" placeholder="https://…">
+        </div>
+
+        <div class="settings-divider"></div>
+
+        <div class="pref-row">
+            <div class="pref-text">
+                <div class="pref-label">Notification sounds</div>
+                <div class="pref-sub">Play a chime for new messages</div>
+            </div>
+            <button id="pref-sounds" class="toggle-switch on" role="switch" aria-checked="true"><span class="toggle-knob"></span></button>
+        </div>
+        <div class="pref-row">
+            <div class="pref-text">
+                <div class="pref-label">Desktop notifications</div>
+                <div class="pref-sub">Alerts when the tab is in the background</div>
+            </div>
+            <button id="pref-notify" class="toggle-switch" role="switch" aria-checked="false"><span class="toggle-knob"></span></button>
+        </div>
+
+        <div class="settings-divider"></div>
+        <div class="blocked-section">
+            <div class="blocked-header">
+                <span class="pref-label">Blocked users</span>
+                <span id="blocked-count" class="blocked-count">0</span>
+            </div>
+            <div id="blocked-list" class="blocked-list"></div>
+        </div>
+
+        <div class="modal-actions">
+            <button id="close-settings-2" class="btn-secondary">Cancel</button>
+            <button id="save-settings" class="btn-primary">Save changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Remove Friend Modal ────────────────────────────── -->
+<div id="remove-modal" class="modal hidden">
+    <div class="modal-backdrop" id="remove-modal-backdrop"></div>
+    <div class="modal-box" style="width:360px;">
+        <div class="modal-header">
+            <h3>Remove friend</h3>
+            <button id="close-remove-modal" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <p id="remove-modal-text" style="color:var(--text-muted);font-size:14px;line-height:1.6;margin-bottom:4px;"></p>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:8px;padding:10px 12px;background:rgba(242,63,66,0.08);border:1px solid rgba(242,63,66,0.2);border-radius:var(--radius-sm);">
+            ⚠️ This will permanently delete the entire conversation and all messages.
+        </p>
+        <div class="modal-actions">
+            <button id="cancel-remove-btn" class="btn-secondary">Cancel</button>
+            <button id="confirm-remove-btn" class="btn-danger">Remove & delete chat</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Info side panel ────────────────────────────────── -->
+<div id="info-panel" class="info-panel hidden">
+    <div class="info-panel-header">
+        <span>Conversation info</span>
+        <button id="info-close" class="icon-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <div id="info-panel-body" class="info-panel-body"></div>
+</div>
+
+<!-- ── Shortcuts modal ────────────────────────────────── -->
+<div id="shortcuts-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="width:380px;">
+        <div class="modal-header">
+            <h3>Keyboard shortcuts</h3>
+            <button class="icon-btn shortcuts-close-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="shortcuts-list">
+            <div class="shortcut-row"><kbd>?</kbd><span>Show this help</span></div>
+            <div class="shortcut-row"><kbd>Ctrl</kbd>+<kbd>K</kbd><span>Quick chat switcher</span></div>
+            <div class="shortcut-row"><kbd>Esc</kbd><span>Close menus / cancel reply</span></div>
+            <div class="shortcut-row"><kbd>Enter</kbd><span>Send message</span></div>
+            <div class="shortcut-row"><kbd>Shift</kbd>+<kbd>Enter</kbd><span>New line in message</span></div>
+            <div class="shortcut-divider">Slash commands</div>
+            <div class="shortcut-row"><code>/shrug</code><span>¯\_(ツ)_/¯</span></div>
+            <div class="shortcut-row"><code>/tableflip</code><span>(╯°□°)╯︵ ┻━┻</span></div>
+            <div class="shortcut-row"><code>/unflip</code><span>┬─┬ノ( º _ ºノ)</span></div>
+            <div class="shortcut-row"><code>/me text</code><span>Italic action message</span></div>
+            <div class="shortcut-row"><code>/clear</code><span>Clear the current draft</span></div>
+            <div class="shortcut-row"><code>/help</code><span>Show this help</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Quick switcher ─────────────────────────────────── -->
+<div id="quick-switcher" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="width:440px;padding-top:14px;">
+        <input id="quick-switcher-input" type="text" placeholder="Jump to a chat…" autocomplete="off" spellcheck="false">
+        <div id="quick-switcher-results" class="quick-switcher-results"></div>
+    </div>
+</div>
+
+<!-- ── Forward picker ─────────────────────────────────── -->
+<div id="forward-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="width:380px;">
+        <div class="modal-header">
+            <h3>Forward to…</h3>
+            <button id="forward-close" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div id="forward-preview" class="forward-preview"></div>
+        <div id="forward-results" class="forward-results"></div>
+    </div>
+</div>
+
+<!-- ── New group modal ────────────────────────────────── -->
+<div id="new-group-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="width:420px;">
+        <div class="modal-header">
+            <h3>New group</h3>
+            <button id="new-group-close" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="input-group">
+            <label>Group name</label>
+            <input type="text" id="new-group-name" placeholder="e.g. Project Phoenix" maxlength="60">
+        </div>
+        <div class="input-group">
+            <label>Members</label>
+            <p class="input-hint">Pick from your contacts</p>
+            <div id="new-group-picker" class="new-group-picker"></div>
+        </div>
+        <div class="modal-actions">
+            <button id="new-group-cancel" class="btn-secondary">Cancel</button>
+            <button id="new-group-create" class="btn-primary">Create group</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Starred modal ──────────────────────────────────── -->
+<div id="starred-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" style="width:460px;">
+        <div class="modal-header">
+            <h3>Starred messages</h3>
+            <button id="starred-close" class="icon-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div id="starred-list" class="starred-list"></div>
+    </div>
+</div>
+
+<script type="module" src="app.js"></script>
+<script>
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW failed:', err));
+        });
+    }
+</script>
+</body>
+</html>
